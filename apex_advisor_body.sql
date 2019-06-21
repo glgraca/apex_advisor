@@ -82,7 +82,7 @@ PACKAGE BODY apex_advisor AS
   
   procedure log_results(p_app_id number, p_date date) is
   begin
-    insert into advisor_apex_results (app_id, dt_verification, seq_id, position, object_type, url, rule_group, rule_name, description) 
+    insert into apex_advisor_results (app_id, dt_verification, seq_id, position, object_type, url, rule_group, rule_name, description) 
     
     select p_app_id,p_date, seq_id, dbms_lob.substr(c001, 4000, 1), dbms_lob.substr(c003, 4000, 1), dbms_lob.substr(c004, 4000, 1),
            dbms_lob.substr(c005, 4000, 1), dbms_lob.substr(c006, 4000, 1), dbms_lob.substr(c007, 4000, 1)
