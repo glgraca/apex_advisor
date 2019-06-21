@@ -8,4 +8,7 @@ CREATE TABLE APEX_ADVISOR_RESULTS
 	"RULE_GROUP" VARCHAR2(4000 BYTE), 
 	"RULE_NAME" VARCHAR2(4000 BYTE), 
 	"DESCRIPTION" VARCHAR2(4000 BYTE)
-)
+);
+
+
+grant select, insert, references on apex_advisor_results to apex_050000;
