@@ -80,17 +80,6 @@ PACKAGE BODY apex_advisor AS
       p_app_page => apex_application.g_flow_id||':'||p_app_page_id);
   end create_apex_session;
   
-  procedure log_results(p_app_id number, p_date date) is
-  begin
-    insert into apex_advisor_results (app_id, dt_verification, seq_id, position, object_type, url, rule_group, rule_name, description) 
-    
-    select p_app_id,p_date, seq_id, dbms_lob.substr(c001, 4000, 1), dbms_lob.substr(c003, 4000, 1), dbms_lob.substr(c004, 4000, 1),
-           dbms_lob.substr(c005, 4000, 1), dbms_lob.substr(c006, 4000, 1), dbms_lob.substr(c007, 4000, 1)
-    from wwv_flow_collections$ c
-         inner join wwv_flow_collection_members$ m on c.id=m.collection_id
-         where c.user_id='ADMIN' and c.collection_name='FLOW_ADVISOR_RESULT';
-  end;
-  
   procedure execute_advisor(p_app_id number, p_log_date date default sysdate)
   is
     options wwv_flow_global.vc_arr2;
@@ -101,9 +90,13 @@ PACKAGE BODY apex_advisor AS
     
     create_apex_session(p_app_id, 'ADMIN', 1);
     
-     wwv_flow_advisor_dev.check_application(p_application_id=>p_app_id, p_check_list=>options);
+    wwv_flow_advisor_dev.check_application(p_application_id=>p_app_id, p_check_list=>options);
      
-     log_results(p_app_id, p_log_date);
+    log_results(p_app_id, p_log_date);
+    
+    wwv_flow_session_state.clear_state_for_user;
+    
+    exception when others then dbms_output.put_line(p_app_id||' :'||sqlerrm);
   end;
   
   procedure execute_advisor
@@ -111,7 +104,19 @@ PACKAGE BODY apex_advisor AS
     l_log_date date:=sysdate;
   begin
     for app in (select * from apex_applications where workspace!='INTERNAL') loop
-      execute_advisor(app.application_id, l_log_date);
+      begin
+        dbms_scheduler.create_job(
+          job_name=>'apex_advisor_'||app.application_id,
+          job_type=>'PLSQL_BLOCK',
+          job_action=>'begin apex_advisor.execute_advisor('||app.application_id||', to_date('''||to_char(l_log_date,'YYYYMMDD HH24:MI:SS')||''',''YYYYMMDD HH24:MI:SS'')); end;',
+          start_date=>sysdate,
+          enabled=>true,
+          auto_drop=>true,
+          comments=>'One-time job');
+          
+      exception when others then
+        dbms_output.put_line(app.application_id||':'||sqlerrm);
+      end;
     end loop;
   end;
   
