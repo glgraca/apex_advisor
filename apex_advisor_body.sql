@@ -135,7 +135,7 @@ PACKAGE BODY apex_advisor AS
     l_log_date date:=sysdate;
   begin
     for app in (select * from apex_applications where workspace!='INTERNAL') loop
-      apex_advisor.execute_advisor(app.application_id, l_log_date);         
+      apex_advisor.execute_advisor_async(app.application_id, l_log_date);         
     end loop;
   end execute_advisor;
   
