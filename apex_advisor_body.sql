@@ -80,6 +80,36 @@ PACKAGE BODY apex_advisor AS
       p_app_page => apex_application.g_flow_id||':'||p_app_page_id);
   end create_apex_session;
   
+
+  procedure log_results(p_app_id number, p_date date) is
+  begin
+    insert into apex_advisor_results (app_id, verified, seq_id, position, object_type, url, rule_group, rule_name, description) 
+    
+    select p_app_id,p_date, seq_id, dbms_lob.substr(c001, 4000, 1), dbms_lob.substr(c003, 4000, 1), dbms_lob.substr(c004, 4000, 1),
+           dbms_lob.substr(c005, 4000, 1), dbms_lob.substr(c006, 4000, 1), dbms_lob.substr(c007, 4000, 1)
+    from wwv_flow_collections$ c
+         inner join wwv_flow_collection_members$ m on c.id=m.collection_id
+         where c.user_id='ADMIN' and c.collection_name='FLOW_ADVISOR_RESULT';
+         
+    commit;
+  end;
+  
+  procedure execute_advisor_async(p_app_id number, p_log_date date default sysdate)
+  is
+  begin
+    dbms_scheduler.create_job(
+      job_name=>'apex_advisor_'||p_app_id,
+      job_type=>'PLSQL_BLOCK',
+      job_action=>'begin apex_advisor.execute('||p_app_id||', to_date('''||to_char(p_log_date,'YYYYMMDD HH24:MI:SS')||''',''YYYYMMDD HH24:MI:SS'')); end;',
+      start_date=>sysdate,
+      enabled=>true,
+      auto_drop=>true,
+      comments=>'One-time job');
+          
+    exception when others then
+      dbms_output.put_line(p_app_id||':'||sqlerrm);
+  end execute_advisor_async;
+  
   procedure execute_advisor(p_app_id number, p_log_date date default sysdate)
   is
     options wwv_flow_global.vc_arr2;
@@ -96,29 +126,18 @@ PACKAGE BODY apex_advisor AS
     
     wwv_flow_session_state.clear_state_for_user;
     
-    exception when others then dbms_output.put_line(p_app_id||' :'||sqlerrm);
-  end;
+    exception when others then 
+      dbms_output.put_line(p_app_id||' :'||sqlerrm);
+  end execute_advisor;
   
   procedure execute_advisor
   is 
     l_log_date date:=sysdate;
   begin
     for app in (select * from apex_applications where workspace!='INTERNAL') loop
-      begin
-        dbms_scheduler.create_job(
-          job_name=>'apex_advisor_'||app.application_id,
-          job_type=>'PLSQL_BLOCK',
-          job_action=>'begin apex_advisor.execute_advisor('||app.application_id||', to_date('''||to_char(l_log_date,'YYYYMMDD HH24:MI:SS')||''',''YYYYMMDD HH24:MI:SS'')); end;',
-          start_date=>sysdate,
-          enabled=>true,
-          auto_drop=>true,
-          comments=>'One-time job');
-          
-      exception when others then
-        dbms_output.put_line(app.application_id||':'||sqlerrm);
-      end;
+      apex_advisor.execute_advisor(app.application_id, l_log_date);         
     end loop;
-  end;
+  end execute_advisor;
   
 
 end apex_advisor;
