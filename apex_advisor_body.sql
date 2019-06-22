@@ -100,7 +100,7 @@ PACKAGE BODY apex_advisor AS
     dbms_scheduler.create_job(
       job_name=>'apex_advisor_'||p_app_id,
       job_type=>'PLSQL_BLOCK',
-      job_action=>'begin apex_advisor.execute('||p_app_id||', to_date('''||to_char(p_log_date,'YYYYMMDD HH24:MI:SS')||''',''YYYYMMDD HH24:MI:SS'')); end;',
+      job_action=>'begin apex_advisor.execute_advisor('||p_app_id||', to_date('''||to_char(p_log_date,'YYYYMMDD HH24:MI:SS')||''',''YYYYMMDD HH24:MI:SS'')); end;',
       start_date=>sysdate,
       enabled=>true,
       auto_drop=>true,
