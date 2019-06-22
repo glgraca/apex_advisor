@@ -91,6 +91,7 @@ PACKAGE BODY apex_advisor AS
          inner join wwv_flow_collection_members$ m on c.id=m.collection_id
          where c.user_id='ADMIN' and c.collection_name='FLOW_ADVISOR_RESULT';
          
+    wwv_flow_collection.delete_all_collections;     
     commit;
   end;
   
