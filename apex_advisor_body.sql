@@ -78,6 +78,8 @@ PACKAGE BODY apex_advisor AS
       p_uname => p_app_user,
       p_session_id => null, -- could use APEX_CUSTOM_AUTH.GET_NEXT_SESSION_ID
       p_app_page => apex_application.g_flow_id||':'||p_app_page_id);
+      
+    apex_util.set_session_lang('en-uk'); 
   end create_apex_session;
   
 
