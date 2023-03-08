@@ -30,7 +30,10 @@ It is easier to compile the package in the Apex schema (i.e. APEX_050000 or APEX
 
 ```sql
 -- Check all applications asynchronously
-exec pk_apex_advisor.execute_advisor();
+exec pk_apex_advisor.execute_advisor_async();
+
+-- Check all applications synchronously
+exec pk_apex_advisor.execute_advisor_sync();
 
 -- Check one application asynchronously
 exec pk_apex_advisor.execute_advisor_async(123);
@@ -39,5 +42,4 @@ exec pk_apex_advisor.execute_advisor_async(123);
 exec pk_apex_advisor.execute_advisor(123);
 ```
 
-If you use the synchronous option, you won't be able to invoke it again in the same session, so it's best not to unless you can find a way to wipe the Apex session and create another one. If you do, please tell me about it.
-
+The procedures without parameters will not execute the advisor for applications that have not been updated since the last execution.
