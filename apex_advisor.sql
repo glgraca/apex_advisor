@@ -12,6 +12,8 @@ create or replace package apex_advisor AS
 
   procedure execute_advisor(p_app_id in number, p_log_date date default sysdate);
 
+  procedure execute_advisor_async;
+
   procedure execute_advisor;
 
 END apex_advisor;
