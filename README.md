@@ -33,7 +33,7 @@ It is easier to compile the package in the Apex schema (i.e. APEX_050000 or APEX
 exec pk_apex_advisor.execute_advisor_async();
 
 -- Check all applications synchronously
-exec pk_apex_advisor.execute_advisor_sync();
+exec pk_apex_advisor.execute_advisor();
 
 -- Check one application asynchronously
 exec pk_apex_advisor.execute_advisor_async(123);
